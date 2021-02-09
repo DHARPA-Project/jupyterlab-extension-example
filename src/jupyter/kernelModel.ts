@@ -20,6 +20,8 @@ export class KernelModel implements IModel {
   constructor(session: ISessionContext) {
     this._sessionContext = session
 
+    this._sessionContext
+
     this._sessionContext.session?.kernel?.anyMessage?.connect(this._anyMessageHandler.bind(this))
   }
 

@@ -20,16 +20,15 @@ export class WrapperPanel extends StackedPanel {
     this.title.closable = true
     this._sessionContext = sessionContext
 
-    this._model = new KernelModel(this._sessionContext)
-    this._example = new KernelView(this._model)
-
-    this.addWidget(this._example)
     void this._sessionContext
       .initialize()
-      .then(async value => {
-        if (value) {
+      .then(async shouldSelectKernel => {
+        if (shouldSelectKernel) {
           await sessionContextDialogs.selectKernel(this._sessionContext)
         }
+        this._model = new KernelModel(this._sessionContext)
+        this._example = new KernelView(this._model)
+        this.addWidget(this._example)
       })
       .catch(reason => {
         console.error(`Failed to initialize the session in ExamplePanel.\n${reason}`)
@@ -41,7 +40,8 @@ export class WrapperPanel extends StackedPanel {
   }
 
   dispose(): void {
-    this._sessionContext.dispose()
+    // uncomment to destroy kernel on exit
+    // this._sessionContext.dispose()
     super.dispose()
   }
 

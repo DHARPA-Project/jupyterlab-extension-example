@@ -1,5 +1,5 @@
-import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
-import { SessionContext, ICommandPalette } from '@jupyterlab/apputils'
+import { ILayoutRestorer, JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application'
+import { SessionContext, ICommandPalette, WidgetTracker } from '@jupyterlab/apputils'
 import { ILauncher } from '@jupyterlab/launcher'
 import { IMainMenu } from '@jupyterlab/mainmenu'
 import { ITranslator } from '@jupyterlab/translation'
@@ -22,10 +22,10 @@ namespace CommandIDs {
 /**
  * Initialization data for the extension.
  */
-const extension: JupyterFrontEndPlugin<void> = {
+const extension: JupyterFrontEndPlugin<WidgetTracker<WrapperPanel>> = {
   id: AppId,
   autoStart: true,
-  optional: [ILauncher],
+  optional: [ILauncher, ILayoutRestorer],
   requires: [ICommandPalette, IMainMenu, ITranslator, INotebookTracker],
   activate: activate
 }
@@ -39,12 +39,17 @@ function activate(
   mainMenu: IMainMenu,
   translator: ITranslator,
   notebooks: INotebookTracker,
-  launcher: ILauncher | null
-): void {
+  launcher: ILauncher | null,
+  restorer: ILayoutRestorer | null
+): WidgetTracker<WrapperPanel> {
   const manager = app.serviceManager
   const { commands, shell } = app
   const category = AppCategory
   const trans = translator.load('jupyterlab')
+
+  const mainPanelTracker = new WidgetTracker<WrapperPanel>({
+    namespace: AppId
+  })
 
   // Add launcher
   if (launcher) {
@@ -54,17 +59,35 @@ function activate(
     })
   }
 
-  async function createPanel(): Promise<WrapperPanel> {
-    const sessionContext =
-      notebooks?.currentWidget?.context?.sessionContext ??
-      new SessionContext({
-        sessionManager: manager.sessions,
-        specsManager: manager.kernelspecs,
-        name: AppLabel
+  // restore open windows
+  if (restorer) {
+    void restorer.restore(mainPanelTracker, {
+      command: CommandIDs.create,
+      name: panel => panel.session.path,
+      when: notebooks.restored.then(() => app.serviceManager.ready),
+      args: panel => ({
+        path: panel.session.path
       })
+    })
+  }
+
+  // create new panel with a path to the notebook it tracks (if any)
+  async function createPanel({ path }: { path?: string }): Promise<WrapperPanel> {
+    const notebookWidget = notebooks.find(n => n.sessionContext.path === path) ?? notebooks?.currentWidget
+
+    const existingContext = notebookWidget?.context?.sessionContext
+    const sessionContext = existingContext
+      ? existingContext
+      : new SessionContext({
+          sessionManager: manager.sessions,
+          specsManager: manager.kernelspecs,
+          name: AppLabel
+        })
 
     const panel = new WrapperPanel(`${AppId}-panel`, AppLabel, sessionContext, translator)
     shell.add(panel, 'main')
+    mainPanelTracker.add(panel)
+
     return panel
   }
 
@@ -83,6 +106,8 @@ function activate(
   // add items in command palette and menu
   palette.addItem({ command: CommandIDs.create, category })
   exampleMenu.addItem({ command: CommandIDs.create })
+
+  return mainPanelTracker
 }
 
 export default extension
