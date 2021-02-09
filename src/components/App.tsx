@@ -118,7 +118,7 @@ export const App = (): JSX.Element => {
                   <div className="flex items-center">
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">
-                        <pre className="whitespace-normal">{JSON.stringify(message.content)}</pre>
+                        <pre className="whitespace-pre-wrap">{JSON.stringify(message.content, null, 2)}</pre>
                       </div>
                     </div>
                   </div>
