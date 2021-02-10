@@ -13,6 +13,29 @@ const ExecuteResult = ({ result }: { result: Record<string, unknown> }) => {
   return <pre className="whitespace-normal">{data['text/plain']}</pre>
 }
 
+const TableHeaderCell = ({ children }: { children: React.ReactNode }) => (
+  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+    {children}
+  </th>
+)
+
+const TableCell = ({ children }: { children: React.ReactNode }) => (
+  <td className="px-2 py-4 whitespace-nowrap">
+    <div className="flex items-center">
+      <div className="ml-4">
+        <div className="text-sm font-medium text-gray-900">
+          <pre className="whitespace-pre-wrap">{children}</pre>
+        </div>
+      </div>
+    </div>
+  </td>
+)
+
+const InputClasses =
+  'focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md p-2 w-full'
+const ButtonClasses =
+  'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 whitespace-nowrap'
+
 export const App = (): JSX.Element => {
   const [executeString, setExecuteString] = React.useState('')
   const [commTarget, setCommTarget] = React.useState('')
@@ -40,14 +63,11 @@ export const App = (): JSX.Element => {
           <input
             type="test"
             placeholder="Python code"
-            className="focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md p-2 w-full"
+            className={InputClasses}
             value={executeString}
             onChange={e => setExecuteString(e.target.value)}
           />
-          <button
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            onClick={executeCode}
-          >
+          <button className={ButtonClasses} onClick={executeCode}>
             Execute
           </button>
         </div>
@@ -62,21 +82,18 @@ export const App = (): JSX.Element => {
           <input
             type="text"
             placeholder="target"
-            className="focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md p-2 w-full"
+            className={InputClasses}
             value={commTarget}
             onChange={e => setCommTarget(e.target.value)}
           />
           <input
             placeholder="Message"
             type="text"
-            className="focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md p-2 w-full"
+            className={InputClasses}
             value={commMessage}
             onChange={e => setCommMessage(e.target.value)}
           />
-          <button
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 whitespace-nowrap"
-            onClick={sendCommMessage}
-          >
+          <button className={ButtonClasses} onClick={sendCommMessage}>
             Send Message
           </button>
         </div>
@@ -87,90 +104,21 @@ export const App = (): JSX.Element => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Status
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Date
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Channel
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Message
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Metadata
-              </th>
+              <TableHeaderCell>Status</TableHeaderCell>
+              <TableHeaderCell>Date</TableHeaderCell>
+              <TableHeaderCell>Channel</TableHeaderCell>
+              <TableHeaderCell>Message</TableHeaderCell>
+              <TableHeaderCell>Metadata</TableHeaderCell>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {messages.map((message, index) => (
               <tr key={index}>
-                <td className="px-2 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        <pre className="whitespace-normal">{message.header.msg_type}</pre>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="px-2 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        <pre className="whitespace-normal">{message.header.date}</pre>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="px-2 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        <pre className="whitespace-normal">{message.channel}</pre>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="px-2 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        <pre className="whitespace-pre-wrap">{JSON.stringify(message.content, null, 2)}</pre>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="px-2 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        <pre className="whitespace-pre-wrap">{JSON.stringify(message.metadata, null, 2)}</pre>
-                      </div>
-                    </div>
-                  </div>
-                </td>
+                <TableCell>{message.header.msg_type}</TableCell>
+                <TableCell>{message.header.date}</TableCell>
+                <TableCell>{message.channel}</TableCell>
+                <TableCell>{JSON.stringify(message.content, null, 2)}</TableCell>
+                <TableCell>{JSON.stringify(message.metadata, null, 2)}</TableCell>
               </tr>
             ))}
           </tbody>
