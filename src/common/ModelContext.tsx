@@ -10,6 +10,7 @@ export interface IMessage {
     msg_type: KernelMessage.MessageType
     date: string
   }
+  metadata?: unknown
 }
 
 export interface IModel {
@@ -17,6 +18,7 @@ export interface IModel {
   lastExecutionResult: ISignal<IModel, IMessage>
 
   execute(code: string): void
+  sendMessage(target: string, msg: unknown): void
 }
 
 const ModelContext = React.createContext<IModel>(null)
@@ -44,4 +46,9 @@ export const useExecute = (): [IMessage | undefined, (code: string) => void] => 
   const result = useSignal(model.lastExecutionResult)
 
   return [result, (code: string) => model.execute(code)]
+}
+
+export const useSendCommMessage = (): [(target: string, msg: unknown) => void] => {
+  const model = React.useContext(ModelContext)
+  return [(target: string, msg: unknown) => model.sendMessage(target, msg)]
 }

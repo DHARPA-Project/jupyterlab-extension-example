@@ -1,5 +1,5 @@
 import React from 'react'
-import { useLastReceivedMessage, useExecute, IMessage } from '../common/ModelContext'
+import { useLastReceivedMessage, useExecute, IMessage, useSendCommMessage } from '../common/ModelContext'
 
 import './app.scss'
 
@@ -15,7 +15,11 @@ const ExecuteResult = ({ result }: { result: Record<string, unknown> }) => {
 
 export const App = (): JSX.Element => {
   const [executeString, setExecuteString] = React.useState('')
+  const [commTarget, setCommTarget] = React.useState('')
+  const [commMessage, setCommMessage] = React.useState('')
+
   const [executeResult, execute] = useExecute()
+  const [sendMessage] = useSendCommMessage()
 
   const lastMessage = useLastReceivedMessage()
   const [messages, setMessages] = React.useState<IMessage[]>(lastMessage == null ? [] : [lastMessage])
@@ -26,6 +30,7 @@ export const App = (): JSX.Element => {
   }, [lastMessage])
 
   const executeCode = () => execute(executeString)
+  const sendCommMessage = () => sendMessage(commTarget, commMessage)
 
   return (
     <div className="flex flex-col">
@@ -33,7 +38,8 @@ export const App = (): JSX.Element => {
       <div className="flex flex-col py-3 px-2">
         <div className="flex flex-row space-x-3">
           <input
-            type="textarea"
+            type="test"
+            placeholder="Python code"
             className="focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md p-2 w-full"
             value={executeString}
             onChange={e => setExecuteString(e.target.value)}
@@ -47,6 +53,32 @@ export const App = (): JSX.Element => {
         </div>
         <div className="flex py-5 px-2">
           <ExecuteResult result={executeResult?.content as Record<string, unknown>} />
+        </div>
+      </div>
+
+      {/* send comm message section */}
+      <div className="flex flex-col py-3 px-2">
+        <div className="flex flex-row space-x-3">
+          <input
+            type="text"
+            placeholder="target"
+            className="focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md p-2 w-full"
+            value={commTarget}
+            onChange={e => setCommTarget(e.target.value)}
+          />
+          <input
+            placeholder="Message"
+            type="text"
+            className="focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md p-2 w-full"
+            value={commMessage}
+            onChange={e => setCommMessage(e.target.value)}
+          />
+          <button
+            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 whitespace-nowrap"
+            onClick={sendCommMessage}
+          >
+            Send Message
+          </button>
         </div>
       </div>
 
@@ -78,6 +110,12 @@ export const App = (): JSX.Element => {
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 Message
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Metadata
               </th>
             </tr>
           </thead>
@@ -119,6 +157,16 @@ export const App = (): JSX.Element => {
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">
                         <pre className="whitespace-pre-wrap">{JSON.stringify(message.content, null, 2)}</pre>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <td className="px-2 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        <pre className="whitespace-pre-wrap">{JSON.stringify(message.metadata, null, 2)}</pre>
                       </div>
                     </div>
                   </div>

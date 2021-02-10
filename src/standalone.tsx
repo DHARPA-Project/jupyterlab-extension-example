@@ -21,6 +21,11 @@ class MockModel implements IModel {
   execute(code: string): void {
     this.lastExecutionResult.emit(createMockMessage(`Result of: ${code}`))
   }
+  sendMessage(target: string, msg: unknown): void {
+    this.lastReceivedMessage.emit(
+      createMockMessage(`Mock message: Sent message ${JSON.stringify(msg)} to target ${target}`)
+    )
+  }
 }
 
 const StandaloneApp = (): JSX.Element => {

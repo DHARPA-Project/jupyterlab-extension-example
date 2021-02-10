@@ -48,6 +48,14 @@ export class KernelModel implements IModel {
     })
   }
 
+  sendMessage(target: string, msg: unknown): void {
+    const comm = this._sessionContext.session?.kernel?.createComm(target)
+    comm
+      .open()
+      .done.then(() => comm.send({ body: msg as string }).done)
+      .finally(() => comm.close().done.catch(() => undefined))
+  }
+
   get isConnected(): boolean {
     return this?._sessionContext?.session?.kernel != null
   }

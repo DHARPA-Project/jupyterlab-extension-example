@@ -11,6 +11,7 @@ export class KernelView extends ReactWidget {
     super()
     this._model = model
     this.addClass('dharpa-scrollable-panel')
+    this.addClass('bg-gray-200')
   }
 
   protected render(): React.ReactElement<unknown> {
